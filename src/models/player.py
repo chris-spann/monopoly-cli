@@ -16,8 +16,10 @@ class Player(BaseModel):
         roll_1 = randint(1, 6)
         roll_2 = randint(1, 6)
         if roll_1 == roll_2:
+            self.prev_double.pop(0)
             self.prev_double.append(True)
         else:
+            self.prev_double.pop(0)
             self.prev_double.append(False)
         if all(self.prev_double):
             click.echo("3rd consecutive double, go to jail, fool!")
