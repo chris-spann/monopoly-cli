@@ -333,9 +333,9 @@ def setup_game() -> Game:
         ),
     ]
 
-    player_1 = Player(name="Chris", cash=6)
+    player_1 = Player(name="Chris", cash=60)
     game.add_player(player_1)
-    player_2 = Player(name="Benny", cash=6)
+    player_2 = Player(name="Benny", cash=60)
     game.add_player(player_2)
     return game
 
