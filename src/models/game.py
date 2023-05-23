@@ -15,7 +15,7 @@ class Game(BaseModel):
     players: List[Player] = []
     chance_cards: List[Card] = []
     cc_cards: List[Card] = []
-    jail_index: int | None
+    jail_index: int = 0
 
     def add_space(self, space: GameSpace):
         self.spaces.append(space)
@@ -27,9 +27,9 @@ class Game(BaseModel):
 
     def add_card(self, title, type):
         if type == CardTypes.CHANCE:
-            self.chance_cards.append(Card(title, type))
+            self.chance_cards.append(Card(title=title, type=type))
         else:
-            self.cc_cards.append(Card(title, type))
+            self.cc_cards.append(Card(title=title, type=type))
 
     def send_player_to_jail(self, player: Player):
         player.position = self.jail_index

@@ -9,7 +9,7 @@ class Player(BaseModel):
     position: int = 0
     cash: int = 1500
     in_jail: bool = False
-    prev_double: list[bool, bool, bool] = [False, False, False]
+    prev_double: list[bool] = [False, False, False]
     jail_count: int = 0
 
     def roll(self) -> int:
