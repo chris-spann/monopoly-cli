@@ -45,3 +45,12 @@ target-version = "py311"
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
+
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q -s -v --cov=src --cov-report term-missing --cov-fail-under=100"
+testpaths = [
+    "tests",
+    "integration",
+]
