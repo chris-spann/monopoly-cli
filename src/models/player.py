@@ -1,6 +1,5 @@
 from random import randint
 
-import click
 from pydantic import BaseModel
 
 
@@ -18,10 +17,14 @@ class Player(BaseModel):
         if roll_1 == roll_2:
             self.prev_double.pop(0)
             self.prev_double.append(True)
+            if self.in_jail:
+                return 99
         else:
             self.prev_double.pop(0)
             self.prev_double.append(False)
+            if self.in_jail and self.jail_count > 0:
+                self.jail_count -= 1
+                return 0
         if all(self.prev_double):
-            click.echo("3rd consecutive double, go to jail, fool!")
-            return 0
+            return 98
         return roll_1 + roll_2

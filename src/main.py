@@ -306,20 +306,26 @@ def setup_game() -> Game:
             title="Take a walk on the Boardwalk. Advance token to Boardwalk", type=CardTypes.CHANCE
         ),
         Card(
-            title="Advance token to the nearest Railroad and pay owner twice the rental to \
-                which he/she is otherwise entitled. If Railroad if UNOWNED, you may purchase \
-                it from the bank",
+            title=(
+                "Advance token to the nearest Railroad and pay owner twice the rental to "
+                "which he/she is otherwise entitled. If Railroad if UNOWNED, you may purchase "
+                "it from the bank"
+            ),
             type=CardTypes.CHANCE,
         ),
         Card(
-            title="Advance token to the nearest Railroad and pay owner twice the rental to \
-                which he/she is otherwise entitled. If Railroad if UNOWNED, you may purchase \
-                it from the bank",
+            title=(
+                "Advance token to the nearest Railroad and pay owner twice the rental to "
+                "which he/she is otherwise entitled. If Railroad if UNOWNED, you may purchase "
+                "it from the bank"
+            ),
             type=CardTypes.CHANCE,
         ),
         Card(
-            title="Advance token to the nearest utility. If UNOWNED you may buy if from the bank. \
-                If OWNED, throw dice and pay owner a total ten times the amount thrown",
+            title=(
+                "Advance token to the nearest utility. If UNOWNED you may buy if from the bank. "
+                "If OWNED, throw dice and pay owner a total ten times the amount thrown"
+            ),
             type=CardTypes.CHANCE,
         ),
         Card(title="Advance to Illinois Ave", type=CardTypes.CHANCE),
@@ -327,11 +333,14 @@ def setup_game() -> Game:
             title="Go directly to jail. Do not pass GO. Do not collect $200", type=CardTypes.CHANCE
         ),
         Card(
-            title="Make general repairs on all your property. For each house pay $25, \
-                for each hotel $100",
+            title=(
+                "Make general repairs on all your property. For each house pay $25, "
+                "for each hotel $100"
+            ),
             type=CardTypes.CHANCE,
         ),
     ]
+    game.shuffle_cards()
 
     player_1 = Player(name="Chris")
     game.add_player(player_1)

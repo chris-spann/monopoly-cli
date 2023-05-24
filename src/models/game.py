@@ -1,4 +1,5 @@
 import itertools
+import random
 from typing import List
 
 import click
@@ -31,6 +32,16 @@ class Game(BaseModel):
         else:
             self.cc_cards.append(Card(title=title, type=type))
 
+    def shuffle_cards(self):
+        random.shuffle(self.cc_cards)
+        random.shuffle(self.chance_cards)
+        click.echo("cards shuffled")
+        return self
+
+    def send_player_to_just_visiting(self, player: Player):
+        player.in_jail = False
+        player.jail_count = 0
+
     def send_player_to_jail(self, player: Player):
         player.position = self.jail_index
         player.in_jail = True
@@ -41,11 +52,6 @@ class Game(BaseModel):
         no_cash_players = 0
         list_buff = itertools.cycle(self.players)
         for player in list_buff:
-            # skip turn if in jail
-            if player.jail_count > 0:
-                click.echo("player in jail. skipping turn")
-                player.jail_count -= 1
-                continue
             self.player_turn(player)
             click.echo("----------")
             if player.cash == 0:
@@ -61,16 +67,27 @@ class Game(BaseModel):
         starting_space = self.spaces[player.position]
         click.echo(f"player: {player.name} started on {starting_space}")
         roll_result = player.roll()
-        click.echo(f"rolled: {roll_result}")
+        if roll_result < 13:
+            click.echo(f"rolled: {roll_result}")
+            # if player passes or lands on GO, add 200 to their cash
+            if player.position + roll_result >= len(self.spaces):
+                player.cash += 200
+                click.echo("passed go, added $200")
+            player.position = (player.position + roll_result) % len(self.spaces)
+            new_space = self.spaces[player.position]
+            click.echo(f"player: {player.name} landed on {new_space}")
+            new_space.action(player, self.jail_index)
+            return
         # roll result ==0 when 3 consecutive doubles, go to jail
-        if roll_result == 0:
+        if roll_result == 98:
+            click.echo("3rd consecutive double, go to jail, fool!")
             self.send_player_to_jail(player)
-        # if player passes or lands on GO, add 200 to their cash
-        if player.position + roll_result >= len(self.spaces):
-            player.cash += 200
-            click.echo("passed go, added $200")
-        player.position = (player.position + roll_result) % len(self.spaces)
-        new_space = self.spaces[player.position]
-        click.echo(f"player: {player.name} landed on {new_space}")
-        new_space.action(player, self.jail_index)
-        return
+            return
+        if roll_result == 99:
+            click.echo("Rolled a double while in jail, now just visiting.")
+            self.send_player_to_just_visiting(player)
+            return
+        else:
+            raise Exception(
+                f"Uncaught scenarion....roll result: {roll_result} for player: {player}"
+            )
