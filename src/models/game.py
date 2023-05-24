@@ -6,7 +6,7 @@ import click
 from pydantic import BaseModel
 
 from models.cards import Card, CardTypes
-from models.constants import GameSpaceTypes
+from models.constants import GameSpaceTypes, PropertyStatus
 from models.gamespace import GameSpace
 from models.player import Player
 
@@ -47,6 +47,39 @@ class Game(BaseModel):
         player.in_jail = True
         player.jail_count = 3
 
+    def post_move_action(self, new_space: GameSpace, player: Player):
+        if new_space.type == GameSpaceTypes.GO_TO_JAIL:
+            click.echo("Going to jail...")
+            player.position = self.jail_index
+        # TODO: implement drawing of card
+        if new_space.type in [GameSpaceTypes.DRAW_CHANCE, GameSpaceTypes.DRAW_CHEST]:
+            click.echo("Draw a card")
+            return
+        # TODO: what if the player doesn't have enough cash?
+        if new_space.type == GameSpaceTypes.TAX:
+            if player.cash >= new_space.value:
+                click.echo(f"Taxed! Paid: {new_space.value}")
+                player.cash -= new_space.value
+        # TODO: if new space type is TAX_INCOME, present the choice of 10% of cash or $200
+        # TODO: if property is owned, determine the rent amount and pay it
+        if (
+            new_space.type in [GameSpaceTypes.PROPERTY, GameSpaceTypes.RAILROAD]
+            and new_space.status == PropertyStatus.OWNED
+            and new_space.owner != player
+        ):
+            click.echo(f"property is owned by {new_space.owner}. Please pay 1 million dollars.")
+        if (
+            new_space.type in [GameSpaceTypes.PROPERTY, GameSpaceTypes.RAILROAD]
+            and new_space.status == PropertyStatus.VACANT
+        ):
+            if click.confirm(f"Property is vacant. Purchase for ${new_space.value}?"):
+                if player.cash >= new_space.value:
+                    new_space.owner = player
+                    new_space.status = PropertyStatus.OWNED
+                    player.cash -= new_space.value
+                else:
+                    click.echo("Sorry, not enough cash.")
+
     def play(self):
         click.echo(f"game spaces: {len(self.spaces)}")
         no_cash_players = 0
@@ -76,9 +109,9 @@ class Game(BaseModel):
             player.position = (player.position + roll_result) % len(self.spaces)
             new_space = self.spaces[player.position]
             click.echo(f"player: {player.name} landed on {new_space}")
-            new_space.action(player, self.jail_index)
+            self.post_move_action(new_space, player)
             return
-        # roll result ==0 when 3 consecutive doubles, go to jail
+        # roll result == 98 when 3 consecutive doubles, go to jail
         if roll_result == 98:
             click.echo("3rd consecutive double, go to jail, fool!")
             self.send_player_to_jail(player)
