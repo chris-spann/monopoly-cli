@@ -1,4 +1,4 @@
-from models.cards import Card, CardTypes
+from models.card import Card, CardTypes
 from models.constants import GameSpaceTypes, PropertyGroup
 from models.game import Game
 from models.gamespace import GameSpace

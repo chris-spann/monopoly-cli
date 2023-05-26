@@ -11,9 +11,11 @@ class Player(BaseModel):
     prev_double: list[bool] = [False, False, False]
     jail_count: int = 0
 
+    def roll_die(self):
+        return randint(1, 6), randint(1, 6)
+
     def roll(self) -> int:
-        roll_1 = randint(1, 6)
-        roll_2 = randint(1, 6)
+        roll_1, roll_2 = self.roll_die()
         if roll_1 == roll_2:
             self.prev_double.pop(0)
             self.prev_double.append(True)

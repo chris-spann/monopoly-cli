@@ -5,7 +5,7 @@ from typing import List
 import click
 from pydantic import BaseModel
 
-from models.cards import Card, CardTypes
+from models.card import Card, CardTypes
 from models.constants import GameSpaceTypes, PropertyStatus
 from models.gamespace import GameSpace
 from models.player import Player
@@ -41,11 +41,12 @@ class Game(BaseModel):
     def send_player_to_just_visiting(self, player: Player):
         player.in_jail = False
         player.jail_count = 0
+        player.position = self.jail_index
 
     def send_player_to_jail(self, player: Player):
-        player.position = self.jail_index
         player.in_jail = True
         player.jail_count = 3
+        player.position = self.jail_index
 
     def post_move_action(self, new_space: GameSpace, player: Player):
         if new_space.type == GameSpaceTypes.GO_TO_JAIL:

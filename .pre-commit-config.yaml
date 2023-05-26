@@ -21,7 +21,6 @@ repos:
         name: Pytest and Coverage
         description: 100% unit testing coverage for Python code.
         entry: pytest -s -v tests --capture=sys --cov=src --cov-report term-missing --cov-fail-under=100
-        # args: ["--rcfile=setup.cfg"]
         language: system
         pass_filenames: false
         always_run: true

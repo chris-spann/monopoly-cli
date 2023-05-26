@@ -11,3 +11,6 @@ class CardTypes(StrEnum):
 class Card(BaseModel):
     title: str
     type: str
+
+    def __repr__(self):
+        return f"title: {self.title}, type: {self.type}"
