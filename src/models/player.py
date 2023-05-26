@@ -11,7 +11,7 @@ class Player(BaseModel):
     prev_double: list[bool] = [False, False, False]
     jail_count: int = 0
 
-    def roll_die(self):
+    def roll_die(self) -> tuple[int, int]:
         return randint(1, 6), randint(1, 6)
 
     def roll(self) -> int:

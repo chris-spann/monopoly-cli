@@ -1,32 +1,31 @@
 import itertools
 import random
-from typing import List
 
 import click
 from pydantic import BaseModel
 
 from models.card import Card, CardTypes
-from models.constants import GameSpaceTypes, PropertyStatus
+from models.constants import GameSpaceTypes, PropertyStatus, RollResultCodes
 from models.gamespace import GameSpace
 from models.player import Player
 
 
 class Game(BaseModel):
-    spaces: List[GameSpace] = []
-    players: List[Player] = []
-    chance_cards: List[Card] = []
-    cc_cards: List[Card] = []
+    spaces: list[GameSpace] = []
+    players: list[Player] = []
+    chance_cards: list[Card] = []
+    cc_cards: list[Card] = []
     jail_index: int = 0
 
-    def add_space(self, space: GameSpace):
+    def add_space(self, space: GameSpace) -> None:
         self.spaces.append(space)
         if space.type == GameSpaceTypes.JAIL:
             self.jail_index = len(self.spaces) - 1
 
-    def add_player(self, player: Player):
+    def add_player(self, player: Player) -> None:
         self.players.append(player)
 
-    def add_card(self, title, type):
+    def add_card(self, title, type) -> None:
         if type == CardTypes.CHANCE:
             self.chance_cards.append(Card(title=title, type=type))
         else:
@@ -38,23 +37,22 @@ class Game(BaseModel):
         click.echo("cards shuffled")
         return self
 
-    def draw_card(self, type: str):
+    def draw_card(self, type: str) -> Card:
         if type == CardTypes.CHANCE:
             return self.chance_cards[0]
-        else:
-            return self.cc_cards[0]
+        return self.cc_cards[0]
 
-    def send_player_to_just_visiting(self, player: Player):
+    def send_player_to_just_visiting(self, player: Player) -> None:
         player.in_jail = False
         player.jail_count = 0
         player.position = self.jail_index
 
-    def send_player_to_jail(self, player: Player):
+    def send_player_to_jail(self, player: Player) -> None:
         player.in_jail = True
         player.jail_count = 3
         player.position = self.jail_index
 
-    def post_move_action(self, new_space: GameSpace, player: Player):
+    def post_move_action(self, new_space: GameSpace, player: Player) -> None:
         if new_space.type == GameSpaceTypes.GO_TO_JAIL:
             click.echo("Going to jail...")
             self.send_player_to_jail(player)
@@ -63,10 +61,9 @@ class Game(BaseModel):
             click.echo("Draw a card")
             self.draw_card(new_space.type)
         # TODO: what if the player doesn't have enough cash?
-        if new_space.type == GameSpaceTypes.TAX:
-            if player.cash >= new_space.value:
-                click.echo(f"Taxed! Paid: {new_space.value}")
-                player.cash -= new_space.value
+        if new_space.type == GameSpaceTypes.TAX and player.cash >= new_space.value:
+            click.echo(f"Taxed! Paid: {new_space.value}")
+            player.cash -= new_space.value
         # TODO: if new space type is TAX_INCOME, present the choice of 10% of cash or $200
         # TODO: if property is owned, determine the rent amount and pay it
         if (
@@ -78,16 +75,15 @@ class Game(BaseModel):
         if (
             new_space.type in [GameSpaceTypes.PROPERTY, GameSpaceTypes.RAILROAD]
             and new_space.status == PropertyStatus.VACANT
-        ):
-            if click.confirm(f"Property is vacant. Purchase for ${new_space.value}?"):
-                if player.cash >= new_space.value:
-                    new_space.owner = player
-                    new_space.status = PropertyStatus.OWNED
-                    player.cash -= new_space.value
-                else:
-                    click.echo("Sorry, not enough cash.")
+        ) and click.confirm(f"Property is vacant. Purchase for ${new_space.value}?"):
+            if player.cash >= new_space.value:
+                new_space.owner = player
+                new_space.status = PropertyStatus.OWNED
+                player.cash -= new_space.value
+            else:
+                click.echo("Sorry, not enough cash.")
 
-    def play(self):
+    def play(self) -> None:
         click.echo(f"game spaces: {len(self.spaces)}")
         no_cash_players = 0
         list_buff = itertools.cycle(self.players)
@@ -107,27 +103,21 @@ class Game(BaseModel):
         starting_space = self.spaces[player.position]
         click.echo(f"player: {player.name} started on {starting_space}")
         roll_result = player.roll()
-        if roll_result < 13:
-            click.echo(f"rolled: {roll_result}")
-            # if player passes or lands on GO, add 200 to their cash
-            if player.position + roll_result >= len(self.spaces):
-                player.cash += 200
-                click.echo("passed go, added $200")
-            player.position = (player.position + roll_result) % len(self.spaces)
-            new_space = self.spaces[player.position]
-            click.echo(f"player: {player.name} landed on {new_space}")
-            self.post_move_action(new_space, player)
-            return
         # roll result == 98 when 3 consecutive doubles, go to jail
-        if roll_result == 98:
+        if roll_result == RollResultCodes.THIRD_DOUBLE:
             click.echo("3rd consecutive double, go to jail, fool!")
             self.send_player_to_jail(player)
             return
-        if roll_result == 99:
+        if roll_result == RollResultCodes.JAIL_DOUBLE:
             click.echo("Rolled a double while in jail, now just visiting.")
             self.send_player_to_just_visiting(player)
             return
-        else:
-            raise Exception(
-                f"Uncaught scenarion....roll result: {roll_result} for player: {player}"
-            )
+        click.echo(f"rolled: {roll_result}")
+        # if player passes or lands on GO, add 200 to their cash
+        if player.position + roll_result >= len(self.spaces):
+            player.cash += 200
+            click.echo("passed go, added $200")
+        player.position = (player.position + roll_result) % len(self.spaces)
+        new_space = self.spaces[player.position]
+        click.echo(f"player: {player.name} landed on {new_space}")
+        self.post_move_action(new_space, player)

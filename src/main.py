@@ -346,7 +346,7 @@ def setup_game() -> Game:
     game.add_player(player_1)
     player_2 = Player(name="Benny")
     game.add_player(player_2)
-    # TODO: shuffle cards, allow player to HOLD GOOJ-free card
+    # TODO: allow player to HOLD GOOJ-free card
     return game
 
 

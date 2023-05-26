@@ -12,7 +12,7 @@ class GameSpace(BaseModel):
     status: str = PropertyStatus.VACANT
     type: str
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"name: {self.name}, type: {self.type}, group: {self.group}, "
             f"status: {self.status}, price: {self.value}"

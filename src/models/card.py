@@ -12,5 +12,5 @@ class Card(BaseModel):
     title: str
     type: str
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"title: {self.title}, type: {self.type}"

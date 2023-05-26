@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import IntEnum, StrEnum
 
 
 class GameSpaceTypes(StrEnum):
@@ -28,3 +28,8 @@ class PropertyGroup(StrEnum):
 class PropertyStatus(StrEnum):
     OWNED = "owned"
     VACANT = "vacant"
+
+
+class RollResultCodes(IntEnum):
+    THIRD_DOUBLE = 98
+    JAIL_DOUBLE = 99
