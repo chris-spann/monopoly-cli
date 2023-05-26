@@ -38,6 +38,12 @@ class Game(BaseModel):
         click.echo("cards shuffled")
         return self
 
+    def draw_card(self, type: str):
+        if type == CardTypes.CHANCE:
+            return self.chance_cards[0]
+        else:
+            return self.cc_cards[0]
+
     def send_player_to_just_visiting(self, player: Player):
         player.in_jail = False
         player.jail_count = 0
@@ -51,11 +57,11 @@ class Game(BaseModel):
     def post_move_action(self, new_space: GameSpace, player: Player):
         if new_space.type == GameSpaceTypes.GO_TO_JAIL:
             click.echo("Going to jail...")
-            player.position = self.jail_index
+            self.send_player_to_jail(player)
         # TODO: implement drawing of card
         if new_space.type in [GameSpaceTypes.DRAW_CHANCE, GameSpaceTypes.DRAW_CHEST]:
             click.echo("Draw a card")
-            return
+            self.draw_card(new_space.type)
         # TODO: what if the player doesn't have enough cash?
         if new_space.type == GameSpaceTypes.TAX:
             if player.cash >= new_space.value:
