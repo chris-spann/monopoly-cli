@@ -2,6 +2,8 @@ from random import randint
 
 from pydantic import BaseModel
 
+from models.constants import RollResultCodes
+
 
 class Player(BaseModel):
     name: str
@@ -16,17 +18,16 @@ class Player(BaseModel):
 
     def roll(self) -> int:
         roll_1, roll_2 = self.roll_die()
+        self.prev_double.pop(0)
         if roll_1 == roll_2:
-            self.prev_double.pop(0)
             self.prev_double.append(True)
             if self.in_jail:
-                return 99
+                return RollResultCodes.JAIL_DOUBLE
+            if all(self.prev_double):
+                return RollResultCodes.THIRD_DOUBLE
         else:
-            self.prev_double.pop(0)
             self.prev_double.append(False)
             if self.in_jail and self.jail_count > 0:
                 self.jail_count -= 1
                 return 0
-        if all(self.prev_double):
-            return 98
         return roll_1 + roll_2

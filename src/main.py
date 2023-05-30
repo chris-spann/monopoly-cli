@@ -350,6 +350,6 @@ def setup_game() -> Game:
     return game
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     game = setup_game()
     game.play()

@@ -16,6 +16,7 @@ class Game(BaseModel):
     chance_cards: list[Card] = []
     cc_cards: list[Card] = []
     jail_index: int = 0
+    no_cash_players: int = 0
 
     def add_space(self, space: GameSpace) -> None:
         self.spaces.append(space)
@@ -61,9 +62,10 @@ class Game(BaseModel):
             click.echo("Draw a card")
             self.draw_card(new_space.type)
         # TODO: what if the player doesn't have enough cash?
-        if new_space.type == GameSpaceTypes.TAX and player.cash >= new_space.value:
+        if new_space.type == GameSpaceTypes.TAX:
             click.echo(f"Taxed! Paid: {new_space.value}")
             player.cash -= new_space.value
+            player.cash = max(player.cash, 0)
         # TODO: if new space type is TAX_INCOME, present the choice of 10% of cash or $200
         # TODO: if property is owned, determine the rent amount and pay it
         if (
@@ -85,20 +87,20 @@ class Game(BaseModel):
 
     def play(self) -> None:
         click.echo(f"game spaces: {len(self.spaces)}")
-        no_cash_players = 0
+        self.no_cash_players = 0
         list_buff = itertools.cycle(self.players)
         for player in list_buff:
+            if player.cash == 0:
+                self.no_cash_players += 1
+                click.echo(f"player: {player.name} is out of cash")
+                if self.no_cash_players == len(self.players):
+                    click.echo("game over, no players with cash")
+                    break
+                continue
             self.player_turn(player)
             click.echo("----------")
-            if player.cash == 0:
-                no_cash_players += 1
-                click.echo(f"player: {player.name} is out of cash")
-                continue
-            if no_cash_players == len(self.players):
-                click.echo("game over, no players with cash")
-                break
 
-    def player_turn(self, player: Player) -> None:
+    def player_turn(self, player: Player):
         click.echo(f"player: {player.name}'s turn")
         starting_space = self.spaces[player.position]
         click.echo(f"player: {player.name} started on {starting_space}")
@@ -121,3 +123,4 @@ class Game(BaseModel):
         new_space = self.spaces[player.position]
         click.echo(f"player: {player.name} landed on {new_space}")
         self.post_move_action(new_space, player)
+        return
